@@ -15,12 +15,12 @@ Clone the project below:
 
 ```
 # Using ssh
-git clone git@github.com:akoCpindar/guest_booking_suzerin.git
+git clone git@github.com:akoCpindar/LaravelVuetify.git
 ```
 Or
 ```
 # Using https
-git clone https://github.com/akoCpindar/guest_booking_suzerin.git
+git clone https://github.com/akoCpindar/LaravelVuetify.git
 ```
 
 ### Step 2:
