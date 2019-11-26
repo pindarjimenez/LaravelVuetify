@@ -13,9 +13,9 @@
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
+    <v-app id="app">
         @yield('content')
-    </div>
+    </v-app>
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}"></script>

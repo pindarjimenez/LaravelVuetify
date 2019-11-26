@@ -1,102 +1,150 @@
 <template>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-12">
-                <a class="btn btn-success float-right mb-3" href="/create" role="button">Create Booking</a>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Email Address</th>
-                            <th>Phone Number</th>
-                            <th>Gender</th>
-                            <th>Address</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(booking, index) in bookings" :key="index">
-                            <td>{{ booking.id }}</td>
-                            <td>{{ booking.first_name }}</td>
-                            <td>{{ booking.last_name }}</td>
-                            <td>{{ booking.email }}</td>
-                            <td>{{ booking.phone }}</td>
-                            <td>{{ booking.gender == 0 ? 'Male' : 'Female' }}</td>
-                            <td>{{ booking.address }}</td>
-                            <td>
-                                <button @click="updateBooking(booking)" class="btn btn-primary">Update</button>
-                                <button @click="deleteBooking(booking.id)" class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="modal fade" id="update" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><b>Guest: </b>{{ first_name + ' ' + last_name }}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
-                            <div class="form-group">
-                                <input type="text" v-model="first_name"  class="form-control" placeholder="First Name">
-                            </div>
-                            <div class="form-group">
-                                <input type="text" v-model="last_name"  class="form-control" placeholder="Last Name">
-                            </div>
-                            <div class="form-group">
-                                <input type="email" v-model="email"  class="form-control" placeholder="Email">
-                            </div>
-                            <div class="form-group">
-                                <input type="number" min="0" v-model="phone" class="form-control" placeholder="Phone">
-                            </div>
-                            <div class="form-group">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" v-model="gender" id="gender1" value="0" checked>
-                                    <label class="form-check-label" for="gender1">
-                                        Male
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" v-model="gender" id="gender2" value="1">
-                                    <label class="form-check-label" for="gender2">
-                                        Female
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <input type="text" v-model="address" class="form-control" placeholder="Address">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" @click="submitBooking()" :disabled="!isComplete">Update changes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <v-container>
+        <v-card raised class="mx-auto pa-5" max-width="1500px" height="100%">
+            <v-row>
+                <v-col cols="12" class="px-6">
+                    <v-btn outlined color="blue" class="float-right" href="/create">Create Booking</v-btn>
+                </v-col>
+            </v-row>
+            <v-data-table :headers="headers" :items="bookings" :items-per-page="10" class="elevation-1">
+                <template v-slot:item="props">
+                    <tr>
+                        <td>{{ props.item.id }}</td>
+                        <td>{{ props.item.first_name }}</td>
+                        <td>{{ props.item.last_name }}</td>
+                        <td>{{ props.item.email }}</td>
+                        <td>{{ props.item.phone }}</td>
+                        <td>{{ props.item.gender == 0 ? 'Male' : 'Female' }}</td>
+                        <td>{{ props.item.address }}</td>
+                        <td width="200px">
+                            <v-btn small outlined color="green darken-1" @click="updateBooking(props.item)">Update</v-btn>
+                            <v-btn small outlined color="red darken-1" @click="deleteBooking(props.item.id)">Delete</v-btn>
+                        </td>
+                    </tr>
+                </template>
+            </v-data-table>
+            
+        </v-card>
+        <v-row justify="center">
+            <v-dialog v-model="dialog" persistent max-width="600px">
+                <v-card>
+                    <v-form ref="form" v-model="valid">
+                        <v-card-title class="headline">Guest: {{ `${first_name} ${last_name}` }}</v-card-title>
+                        <v-card-text>
+                            <v-row>
+                                <v-col cols="12" class="py-0">
+                                    <v-text-field 
+                                        v-model="first_name" 
+                                        v-validate="'required|max:20'"
+                                        :counter="20" 
+                                        :error-messages="errors.collect('first_name')"
+                                        data-vv-name="first_name"
+                                        label="First name" 
+                                        required 
+                                    ></v-text-field>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0">
+                                    <v-text-field 
+                                        v-model="last_name" 
+                                        v-validate="'required|max:20'"
+                                        :counter="20"
+                                        :error-messages="errors.collect('last_name')"
+                                        data-vv-name="last_name"
+                                        label="Last name" 
+                                        required 
+                                    ></v-text-field>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0">
+                                    <v-text-field 
+                                        v-model="email" 
+                                        v-validate="'required|email'"
+                                        :error-messages="errors.collect('email')"
+                                        data-vv-name="email"
+                                        label="E-mail" 
+                                        required
+                                    ></v-text-field>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0">
+                                    <v-text-field 
+                                        v-model="phone" 
+                                        v-validate="'required|integer'"
+                                        :error-messages="errors.collect('phone')"
+                                        data-vv-name="phone"
+                                        type="number" 
+                                        label="Phone" 
+                                        required
+                                    ></v-text-field>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0">
+                                    <v-radio-group 
+                                        v-model="gender" 
+                                        v-validate="'required'"
+                                        :error-messages="errors.collect('gender')"
+                                        data-vv-name="gender"
+                                        row>
+                                        <v-radio label="Male" :value="0"></v-radio>
+                                        <v-radio label="Female" :value="1"></v-radio>
+                                    </v-radio-group>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0">
+                                    <v-textarea 
+                                        v-model="address" 
+                                        v-validate="'required'"
+                                        :error-messages="errors.collect('address')"
+                                        data-vv-name="address"
+                                        label="Address"
+                                        hint="Please enter your address"
+                                    ></v-textarea>
+                                </v-col>
+                            </v-row>
+                        </v-card-text>
+
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="red darken-1" @click="dialog = false">Close</v-btn>
+                            <v-btn color="green darken-1" @click="submitBooking()">Update</v-btn>
+                        </v-card-actions>
+                    </v-form>
+                </v-card>
+            </v-dialog>
+        </v-row>
+    </v-container>
 </template>
 
 <script>
+    import Lang from '../Helpers/Lang.js';
+
     export default {
         data() {
             return {
+                valid: false,
                 bookings: [],
                 id: null,
-                first_name: null,
-                last_name: null,
-                email: null,
-                phone: null,
+                first_name: '',
+                last_name: '',
+                email: '',
+                phone: '',
                 gender: null,
-                address: null,
+                address: '',
+                dialog: false,
+                dictionary: {
+                    attributes: Lang.lang(),
+                },
+                headers: [
+                    { text: '#', value: 'id' },
+                    { text: 'First Name', value: 'first_name' },
+                    { text: 'Last Name', value: 'last_name' },
+                    { text: 'Email Address', value: 'email' },
+                    { text: 'Phone Number', value: 'phone' },
+                    { text: 'Gender', value: 'gender' },
+                    { text: 'Address', value: 'address' },
+                    { text: 'Action'},
+                ],
             }
         },
         methods: {
@@ -123,28 +171,35 @@
                 this.phone = booking.phone;
                 this.gender = booking.gender;
                 this.address = booking.address;
-                $('#update').modal('show');
+                this.dialog = true;
             },
             submitBooking() {
-                axios.post('/update', {
-                    id: this.id,
-                    first_name: this.first_name,
-                    last_name: this.last_name,
-                    email: this.email,
-                    phone: this.phone,
-                    gender: this.gender,
-                    address: this.address
-                })
-                .then((res) => {
-                    $('#update').modal('hide');
-                    toastr.success('Successfully Updated!');
-                    this.fetchBooking();
-                })
-                .catch(err => console.log(err));
+                this.$validator.validateAll().then((result) => {
+                    if (result) {
+                        axios.post('/update', {
+                            id: this.id,
+                            first_name: this.first_name,
+                            last_name: this.last_name,
+                            email: this.email,
+                            phone: this.phone,
+                            gender: this.gender,
+                            address: this.address
+                        })
+                        .then((res) => {
+                            $('#update').modal('hide');
+                            toastr.success('Successfully Updated!');
+                            this.fetchBooking();
+                            this.dialog = false;
+                        })
+                        .catch(err => console.log(err));
+                    }
+                });
             }
         },
         mounted() {
             this.fetchBooking();
+            console.log(this.dictionary);
+            this.$validator.localize('en', this.dictionary);
         },
         computed: {
             isComplete () {
